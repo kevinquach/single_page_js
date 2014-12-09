@@ -224,6 +224,14 @@ spa.shell = (function () {
     }
     return false;
   };
+
+  onLogin = function ( event, login_user ) {
+    jqueryMap.$acct.text( login_user.name );
+  };
+
+  onLogout = function ( event, logout_user ) {
+    jqueryMap.$acct.text( 'Please sign-in' );
+  };
   //------------- END EVENT HANDLERS ----------------
 
   //------------- BEGIN CALLBACKS -------------------
@@ -291,6 +299,13 @@ spa.shell = (function () {
       .bind( 'resize', onResize )
       .bind( 'hashchange', onHashchange )
       .trigger( 'hashchange' );
+
+    $.gevent.subscribe( $container, 'spa-login', onLogin );
+    $.gevent.subscribe( $container, 'spa-logout', onLogout );
+
+    jqueryMap.$acct
+      .text( 'Please sign-in' )
+      .bind( 'utap', onTapAcct );
   };
   // End Public method /initModule/
 
