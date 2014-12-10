@@ -70,11 +70,18 @@ spa.model = (function () {
 //   from the people model for the updated data.
 // * spa-updatechat - This is published when a new message
 //   is received or sent. A map of the form:
+//     { dest_id : <chatee_id>,
+//       dest_name : <chatee_name>,
+//       sender_id : <sender_id>,
+//       msg_text : <message_content>
+//     }
+//     is provided as data.
 //
 chat = (function () {
   var
-    _publish_listchange,
-    _update_list, _leave_chat, join_chat;
+    _publish_listchange, _publish_updatechat,
+    _update_list, _leave_chat, join_chat,
+    get_chatee, send_msg, set_chatee;
 
   // Begin internal methods
   _update_list = function( arg_list ) {
