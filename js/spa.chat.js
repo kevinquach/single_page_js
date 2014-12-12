@@ -10,9 +10,10 @@
  white : true
 */
 
-/*global $, spa, getComputedStyle */
+/*global $, spa */
 
 spa.chat = (function () {
+  'use strict';
   //------------- BEGIN MODULE SCOPE VARIABLES -------------
   var
     configMap = {
@@ -26,13 +27,23 @@ spa.chat = (function () {
           + '</div>'
           + '<div class="spa-chat-closer">x</div>'
           + '<div class="spa-chat-sizer">'
-            + '<div class="spa-chat-msgs"></div>'
-            + '<div class="spa-chat-box">'
-              + '<input type="text"/>'
-              + '<div>send</div>'
+            + '<div class="spa-chat-list">'
+              + '<div class="spa-chat-list-box"></div>'
+            + '</div>'
+            + '<div class="spa-chat-msg">'
+              + '<div class="spa-chat-msg-log"></div>'
+              + '<div class="spa-chat-msg-in">'
+                + '<form class="spa-chat-msg-form">'
+                + '<input type="text"/>'
+                + '<input type="submit" style="display:none"/>'
+                + '<div class="spa-chat-msg-send">'
+                  + 'send'
+                + '</div>'
+              + '</form>'
             + '</div>'
           + '</div>'
-        + '</div>',
+        + '</div>'
+      + '</div>',
 
       settable_map : {
         slider_open_time   : true,
@@ -51,8 +62,8 @@ spa.chat = (function () {
       slider_close_time    : 250,
       slider_opened_em     : 18,
       slider_closed_em     : 2,
-      slider_opened_title  : 'Click to close',
-      slider_closed_title  : 'Click to open',
+      slider_opened_title  : 'Tap to close',
+      slider_closed_title  : 'Tap to open',
       slider_opened_min_em : 10,
       window_height_min_em : 20,
 
@@ -72,18 +83,16 @@ spa.chat = (function () {
     jqueryMap = {},
 
     setJqueryMap, getEmSize, setPxSizes, setSliderPosition,
-    onClickToggle, configModule, initModule,
+    onClickToggle, configModule, initModule, scrollChat,
+    writeChat, writeAlert, clearChat, onTapToggle,
+    onSubmitMsg, onTapList, onSetchatee, onUpdatechat,
+    onListChange, onLogin, onLogout,
     removeSlider, handleResize;
 
 
   //---------- END MODULE SCOPE VARIABLES ----------
 
   //------------ BEGIN UTILITY METHODS -------------
-  getEmSize = function ( elem ) {
-    return Number(
-      getComputedStyle( elem, '').fontSize.match(/\d*\.?\d*/)[0]
-    );
-  };
   //------------- END UTILITY METHODS --------------
 
   //------------- BEGIN DOM METHODS ----------------
@@ -94,15 +103,19 @@ spa.chat = (function () {
       $slider        = $append_target.find( '.spa-chat' );
 
     jqueryMap = {
-      $slider: $slider,
-      $head  : $slider.find( '.spa-chat-head' ),
-      $toggle: $slider.find( '.spa-chat-head-toggle' ),
-      $title : $slider.find( '.spa-chat-head-title' ),
-      $sizer : $slider.find( '.spa-chat-sizer' ),
-      $msgs  : $slider.find( '.spa-chat-msgs' ),
-      $box   : $slider.find( '.spa-chat-box' ),
-      $input : $slider.find( '.spa-chat-input input[type=text]' ),
-      $closer: $slider.find( '.spa-chat-closer')
+      $slider   : $slider,
+      $head     : $slider.find( '.spa-chat-head' ),
+      $toggle   : $slider.find( '.spa-chat-head-toggle' ),
+      $title    : $slider.find( '.spa-chat-head-title' ),
+      $sizer    : $slider.find( '.spa-chat-sizer' ),
+      $input    : $slider.find( '.spa-chat-msg-in input[type=text]' ),
+      $closer   : $slider.find( '.spa-chat-closer'),
+      $list_box : $slider.find( '.spa-chat-list-box'),
+      $msg_log  : $slider.find( '.spa-chat-msg-log'),
+      $msg_in   : $slider.find( '.spa-chat-msg-in'),
+      $send     : $slider.find( '.spa-chat-msg-send'),
+      $form     : $slider.find( '.spa-chat-msg-form'),
+      $window   : $(window)
     };
   };
   // End DOM method /setJqueryMap/
@@ -111,9 +124,9 @@ spa.chat = (function () {
   setPxSizes = function () {
     var px_per_em, window_height_em, opened_height_em;
 
-    px_per_em = getEmSize( jqueryMap.$slider.get(0) );
+    px_per_em = spa.util_b.getEmSize( jqueryMap.$slider.get(0) );
     window_height_em = Math.floor(
-      ( $(window).height() / px_per_em ) + 0.5
+      ( jqueryMap.$window.height() / px_per_em ) + 0.5
     );
 
     opened_height_em
