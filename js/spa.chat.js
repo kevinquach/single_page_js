@@ -164,10 +164,18 @@ spa.chat = (function () {
     var
       height_px, animate_time, slider_title, toggle_text;
 
+    // position type of 'opened' is not allowed for anon user;
+    // therefore we simply return false; the shell will fix the
+    // uri and try again.
+    if ( position_type === 'opened'
+      && configMap.people_model.get_user().get_is_anon()
+      ){ return false; }
+
     // return true if slider is already in requested position
-    if ( stateMap.position_type === position_type ) {
-      return true;
+    if ( position_type === 'opened' ) {
+      jqueryMap.$input.focus();
     }
+    return true;
 
     // prepare animate parameters
     switch ( position_type ) {
@@ -176,6 +184,7 @@ spa.chat = (function () {
         animate_time = configMap.slider_open_time;
         slider_title = configMap.slider_opened_title;
         toggle_text  = '-';
+        jqueryMap.$input.focus();
       break;
 
       case 'hidden' :
