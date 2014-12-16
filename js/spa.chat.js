@@ -220,6 +220,13 @@ spa.chat = (function () {
     return true;
   };
   // End public DOM method /setSliderPosition/
+
+  // Begin private DOM methods
+  var $msg_log = jqueryMap.$msg_log;
+  $msg_log.animate(
+    { scrollTop : $msg_log.prop( 'scrollHeight' )
+    $msg_log.height()
+
   //-------------- END DOM METHODS -----------------
 
   //------------ BEGIN EVENT HANDLERS --------------
